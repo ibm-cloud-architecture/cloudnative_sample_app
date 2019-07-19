@@ -121,7 +121,7 @@ pipeline {
         stage('Kube Deploy Test') {
             agent {
                 docker {
-                    image 'amd64/alpine:latest'
+                    image 'amd64/ubuntu'
                 }
             }
             steps {
