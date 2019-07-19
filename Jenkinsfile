@@ -118,17 +118,15 @@ pipeline {
                 """
             }
         }
-        stage('Initialize helm') {
+        stage('Kube Deploy Test') {
             agent {
                 docker {
-                    image 'ibmcase/jenkins-slave-utils:1'
+                    image 'amd64/alpine:latest'
                 }
             }
             steps {
                 sh """
-                    echo "Initializing Helm ..."
-                    export HELM_HOME=${HELM_HOME}
-                    helm init -c
+                    sh scripts/install_minikube_and_helm.sh
                 """
             }
         }
