@@ -118,5 +118,19 @@ pipeline {
                 """
             }
         }
+        stage('Initialize helm') {
+            agent {
+                docker {
+                    image 'ibmcase/jenkins-slave-utils:1'
+                }
+            }
+            steps {
+                sh """
+                    echo "Initializing Helm ..."
+                    export HELM_HOME=${HELM_HOME}
+                    helm init -c
+                """
+            }
+        }
     }
 }
