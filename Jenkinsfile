@@ -5,6 +5,9 @@ pipeline {
             args '-v /root/.m2:/root/.m2'
         }
     }
+    environment {
+        SERVICE_PORT = 8080
+    }
     stages {
         stage('Build') {
             steps {
@@ -19,6 +22,21 @@ pipeline {
                 always {
                     junit 'target/surefire-reports/*.xml'
                 }
+            }
+        }
+        stage('Deliver') {
+            steps {
+                sh """
+                    #!/bin/bash
+                    java -jar ./target/cloudnativesampleapp-1.0-SNAPSHOT.jar &
+                    PID=`echo \$!`
+                    # Wait for the app to start
+                    sleep 20
+                    sh scripts/health_check.sh
+                    sh scripts/api_tests.sh 127.0.0.1 ${env.SERVICE_PORT}
+                    # Kill process
+                    kill \${PID}
+                """
             }
         }
     }

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function is_healthy {
-	curl -s ${HEALTH_URL} | jq -r ".status";
+	curl -s ${HEALTH_URL} | awk -F'"' '/status/{ print $(NF-1) }';
 }
 
 URL="$1";
