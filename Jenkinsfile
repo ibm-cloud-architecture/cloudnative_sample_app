@@ -5,6 +5,8 @@ pipeline {
         IMAGE_NAME = "greeting"
         RELEASE_NAME= "cloudnativesampleapp"
         EXPOSE_PORT = 8081
+        DOCKERHUB_CREDS = credentials('registry-credentials-id')
+        DOCKER_REPO= "ibmcase"
     }
     stages {
         stage('Build') {
@@ -97,6 +99,22 @@ pipeline {
                     # Kill Container
                     docker kill ${env.RELEASE_NAME} || true
                     docker rm ${env.RELEASE_NAME} || true
+                """
+            }
+        }
+        stage('Docker - Push Image to Registry') {
+            agent any
+            steps{
+                sh """
+                    #!/bin/bash
+                    # Get image
+                    IMAGE=${env.IMAGE_NAME}:${env.BUILD_NUMBER}
+                    # Tag the image
+                    docker tag \${IMAGE} ${env.DOCKER_REPO}/\${IMAGE}
+                    # Login to dockerhub
+                    docker login -u ${DOCKERHUB_CREDS_USR} -p ${DOCKERHUB_CREDS_PSW}
+                    # Push the image
+                    docker push ${env.DOCKER_REPO}/\${IMAGE}
                 """
             }
         }
