@@ -118,17 +118,5 @@ pipeline {
                 """
             }
         }
-        stage('Kube Deploy Test') {
-            agent {
-                docker {
-                    image 'amd64/ubuntu'
-                }
-            }
-            steps {
-                sh """
-                    sh scripts/install_minikube_and_helm.sh
-                """
-            }
-        }
     }
 }
