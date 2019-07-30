@@ -122,6 +122,8 @@ pipeline {
                 sh """
                     #!/bin/bash
                     # Get the deploy repo
+                    git config --global user.email "user@example.com"
+                    git config --global user.name "Jenkins"
                     git clone https://github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git
                     git checkout master
                     cd cloudnative_sample_app_deploy
