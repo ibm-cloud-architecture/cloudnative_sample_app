@@ -126,7 +126,7 @@ pipeline {
                     git checkout master
                     cd cloudnative_sample_app_deploy
                     cd chart/cloudnativesampleapp
-                    sed -i.bak '/^image/,/^service/ s/\(\s*tag\s*:\s*\).*/\ \ tag: '$COMMIT'/g' values.yaml
+                    sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '$COMMIT'/g' values.yaml
                     rm values.yaml.bak
                     git add . *.yaml
                     git commit --message "Jenkins build: ${env.BUILD_NUMBER}"
