@@ -6,6 +6,7 @@ pipeline {
         RELEASE_NAME= "cloudnativesampleapp"
         EXPOSE_PORT = 8081
         DOCKERHUB_CREDS = credentials('registry-credentials-id')
+        GITHUB_CREDS = credentials('github-credentials-id')
         DOCKER_REPO= "ibmcase"
     }
     stages {
@@ -112,6 +113,26 @@ pipeline {
                     docker login -u ${DOCKERHUB_CREDS_USR} -p ${DOCKERHUB_CREDS_PSW}
                     # Push the image
                     docker push ${env.DOCKER_REPO}/\${IMAGE}
+                """
+            }
+        }
+        stage('Commit the latest image tag to deploy repo') {
+            agent any
+            steps{
+                sh """
+                    #!/bin/bash
+                    # Get the deploy repo
+                    git clone https://github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git
+                    git checkout master
+                    cd cloudnative_sample_app_deploy
+                    cd chart/cloudnativesampleapp
+                    sed -i.bak '/^image/,/^service/ s/\(\s*tag\s*:\s*\).*/\ \ tag: '$COMMIT'/g' values.yaml
+                    rm values.yaml.bak
+                    git add . *.yaml
+                    git commit --message "Jenkins build: ${env.BUILD_NUMBER}"
+                    git remote rm origin
+                    git remote add origin https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git > /dev/null 2>&1
+                    git push origin master --quiet
                 """
             }
         }
