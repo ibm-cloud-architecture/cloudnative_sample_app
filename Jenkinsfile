@@ -119,23 +119,17 @@ pipeline {
         stage('Commit the latest image tag to deploy repo') {
             agent any
             steps{
-                sh """
-                    #!/bin/bash
-                    # Get the deploy repo
-                    git config --global user.email "user@example.com"
-                    git config --global user.name "Jenkins"
-                    git clone https://github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git
-                    git checkout master
-                    cd cloudnative_sample_app_deploy
-                    cd chart/cloudnativesampleapp
-                    sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '${env.BUILD_NUMBER}'/g' values.yaml
-                    rm values.yaml.bak
-                    git add . *.yaml
-                    git commit --message "Jenkins build: ${env.BUILD_NUMBER}"
-                    git remote rm origin
-                    git remote add origin https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git > /dev/null 2>&1
-                    git push origin master --quiet
-                """
+                withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    script {
+                        env.encodedPass=URLEncoder.encode(PASS, "UTF-8")
+                    }
+                    sh 'git clone https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git cloudnative_sample_app_deploy/chart/cloudnativesampleapp -b master'
+                    sh "sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '${env.BUILD_NUMBER}'/g' values.yaml"
+                    sh 'rm values.yaml.bak'
+                    sh 'git add . *.yaml'
+                    sh 'git commit --message "Jenkins build: ${env.BUILD_NUMBER}" '
+                    sh 'git push'
+                }
             }
         }
     }
