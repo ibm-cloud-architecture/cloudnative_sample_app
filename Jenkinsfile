@@ -1,35 +1,41 @@
 pipeline {
-  agent {
-    kubernetes {
-      containerTemplate {
-        name 'maven'
-        image 'maven:3.3.9-jdk-8-alpine'
-        ttyEnabled true
-        command 'cat'
-      }
+
+    options {
+        // Build auto timeout
+        timeout(time: 60, unit: 'MINUTES')
     }
-  }
-  environment {
-    CONTAINER_ENV_VAR = 'container-env-var-value'
-  }
-  stages {
-    stage('Run maven') {
-      steps {
-        sh 'set'
-        sh 'test -f /usr/bin/mvn' // checking backwards compatibility
-        sh "echo OUTSIDE_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}"
-        container('maven') {
-          sh 'echo INSIDE_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}'
-          sh 'mvn -version'
+
+    // Some global default variables
+    environment {
+        IMAGE_NAME = 'greeting'
+        TEST_LOCAL_PORT = 8080
+    }
+
+    parameters {
+        string (name: 'GIT_BRANCH',           defaultValue: 'master',  description: 'Git branch to build')
+    }
+
+    // In this example, all is built and run from the master
+    agent { node { label 'master' } }
+
+    // Pipeline stages
+    stages {
+
+        ////////// Step 1 //////////
+        stage('Git clone and setup') {
+            steps {
+                echo "Check out acme code"
+                git branch: "master",
+                        credentialsId: 'github-credentials',
+                        url: 'https://github.com/Hemankita/cloudnative_sample_app.git'
+
+                // Validate kubectl
+                sh "kubectl cluster-info"
+
+                // Init helm client
+                sh "helm init"
+
+            }
         }
-      }
     }
-	stage('Run maven with a different shell') {
-		steps {
-		  container(name: 'maven', shell: '/bin/bash') {
-			sh 'mvn -version'
-		  }
-		}
-	  }
-  }
 }
