@@ -1,34 +1,46 @@
-pipeline {
-    agent any
-
-    stages {
-        stage('Build') {
-            agent {
-              label "maven"
+def buildLabel = "agent.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+def cloudName = env.CLOUD_NAME == "openshift" ? "openshift" : "kubernetes"
+podTemplate(
+   label: buildLabel,
+   cloud: cloudName,
+   containers: [
+      containerTemplate(
+         name: 'maven',
+         image: 'maven:3-alpine',
+         ttyEnabled: true,
+         command: '/bin/bash',
+         workingDir: '/home/jenkins',
+         envVars: [
+            envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
+         ],
+      ),
+   ],
+   serviceAccount: 'jenkins'
+) {
+    node(buildLabel) {
+        container(name: 'maven', shell: '/bin/bash') {
+            checkout scm
+            stage('Setup') {
+                sh '''#!/bin/bash
+                    set -x
+                    mvn -v
+                '''
             }
-            steps {
-                sh 'mvn -B -DskipTests clean package'
+            stage('Build') {
+                sh '''#!/bin/bash
+                    set -x
+                    mvn -B -DskipTests clean package
+                '''
             }
-        }
-        stage('Test') {
-            agent {
-              label "maven"
-            }
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
+            stage('Test') {
+                steps {
+                    sh 'mvn test'
                 }
-            }
-        }
-        stage('Docker - Build Image') {
-            steps{
-                sh """
-                    IMAGE=${env.IMAGE_NAME}:${env.BUILD_NUMBER}
-                    docker build -f Dockerfile.multistage -t \${IMAGE} .
-                """
+                post {
+                    always {
+                        junit 'target/surefire-reports/*.xml'
+                    }
+                }
             }
         }
     }
