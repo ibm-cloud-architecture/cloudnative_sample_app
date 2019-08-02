@@ -26,7 +26,7 @@ node {
     }
 
     stage('Image Build'){
-        imageBuild(IMAGE_NAME, ${env.BUILD_NUMBER})
+        imageBuild(IMAGE_NAME, BUILD_NUMBER)
     }
 
 }
