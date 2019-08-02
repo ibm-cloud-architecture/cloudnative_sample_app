@@ -1,12 +1,14 @@
-def podLabel = "sample_app"
-node(podLabel) {
+pipeline {
+    agent any
 
-    checkout scm
-
-    // Local
-    container(name:'maven:3-alpine', shell:'/bin/bash') {
-        stage('Local - Build and Unit Test') {
-            sh 'mvn -B -DskipTests clean package'
+    stages {
+        stage('Build') {
+            agent {
+              label "maven"
+            }
+            steps {
+                sh 'mvn -B -DskipTests clean package'
+            }
         }
     }
 }
