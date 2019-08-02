@@ -17,6 +17,9 @@ pipeline {
 
         // Run Maven unit tests
         stage('Unit Test'){
+          agent {
+            label "maven"
+          }
           steps {
             sh 'mvn test'
           }
