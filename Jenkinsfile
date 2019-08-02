@@ -1,29 +1,35 @@
-// Pod Template
-def podLabel = "sampleapp"
-def cloud = env.CLOUD ?: "kubernetes"
-def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials-id"
-def serviceAccount = env.SERVICE_ACCOUNT ?: "jenkins"
-
-podTemplate(label: podLabel, cloud: cloud, serviceAccount: serviceAccount,
-    volumes: [
-        emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
-    ],
-    containers: [
-        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: 'cat')
-  ])
-  {
-      node {
-
-          stage('Checkout') {
-              checkout scm
-          }
-
-          // Local
-          container(name:'maven', shell:'/bin/bash') {
-              stage('Local - Build') {
-                  sh 'mvn -B -DskipTests clean package'
-              }
-          }
-
+pipeline {
+  agent {
+    kubernetes {
+      containerTemplate {
+        name 'maven'
+        image 'maven:3.3.9-jdk-8-alpine'
+        ttyEnabled true
+        command 'cat'
       }
     }
+  }
+  environment {
+    CONTAINER_ENV_VAR = 'container-env-var-value'
+  }
+  stages {
+    stage('Run maven') {
+      steps {
+        sh 'set'
+        sh 'test -f /usr/bin/mvn' // checking backwards compatibility
+        sh "echo OUTSIDE_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}"
+        container('maven') {
+          sh 'echo INSIDE_CONTAINER_ENV_VAR = ${CONTAINER_ENV_VAR}'
+          sh 'mvn -version'
+        }
+      }
+    }
+	stage('Run maven with a different shell') {
+		steps {
+		  container(name: 'maven', shell: '/bin/bash') {
+			sh 'mvn -version'
+		  }
+		}
+	  }
+  }
+}
