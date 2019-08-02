@@ -1,44 +1,29 @@
-def CONTAINER_NAME="cloudnativesampleapp"
-def IMAGE_NAME="greeting"
+// Pod Template
+def podLabel = "sampleapp"
+def cloud = env.CLOUD ?: "kubernetes"
+def registryCredsID = env.REGISTRY_CREDENTIALS ?: "registry-credentials-id"
+def serviceAccount = env.SERVICE_ACCOUNT ?: "jenkins"
 
-node {
+podTemplate(label: podLabel, cloud: cloud, serviceAccount: serviceAccount,
+    volumes: [
+        emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
+    ],
+    containers: [
+        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: 'cat')
+  ])
+  {
+      node(podLabel) {
 
-    stage('Initialize'){
-        def dockerHome = tool 'myDocker'
-        def mavenHome  = tool 'myMaven'
-        env.PATH = "${dockerHome}/bin:${mavenHome}/bin:${env.PATH}"
+          stage('Checkout') {
+              checkout scm
+          }
+
+          // Local
+          container(name:'maven', shell:'/bin/bash') {
+              stage('Local - Build') {
+                  sh 'mvn -B -DskipTests clean package'
+              }
+          }
+
+      }
     }
-
-    stage('Checkout') {
-        checkout scm
-    }
-
-    stage('Build'){
-        sh 'mvn -B -DskipTests clean package'
-    }
-
-    stage('Test'){
-        sh 'mvn test'
-    }
-
-    stage("Image Prune"){
-        imagePrune(CONTAINER_NAME)
-    }
-
-    stage('Image Build'){
-        imageBuild(IMAGE_NAME, BUILD_NUMBER)
-    }
-
-}
-
-def imagePrune(containerName){
-    try {
-        sh "docker image prune -f"
-        sh "docker stop $containerName"
-    } catch(error){}
-}
-
-def imageBuild(containerName, tag){
-    sh "docker build -f Dockerfile.multistage -t $containerName:$tag  -t $containerName --pull --no-cache ."
-    echo "Image build complete"
-}
