@@ -6,7 +6,6 @@ pipeline {
         RELEASE_NAME= "cloudnativesampleapp"
         EXPOSE_PORT = 8081
         DOCKERHUB_CREDS = credentials('registry-credentials-id')
-        GITHUB_CREDS = credentials('github-credentials-id')
         DOCKER_REPO= "ibmcase"
     }
     stages {
