@@ -12,7 +12,7 @@ podTemplate(label: podLabel, cloud: cloud, serviceAccount: serviceAccount,
         containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: 'cat')
   ])
   {
-      node(podLabel) {
+      node {
 
           stage('Checkout') {
               checkout scm
