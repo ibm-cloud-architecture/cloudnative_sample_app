@@ -23,21 +23,11 @@ pipeline {
                 }
             }
         }
-        stage('Deliver') {
-            agent {
-              label "maven"
-            }
-            steps {
+        stage('Docker - Build Image') {
+            steps{
                 sh """
-                    #!/bin/bash
-                    java -jar ./target/cloudnativesampleapp-1.0-SNAPSHOT.jar &
-                    PID=`echo \$!`
-                    # Wait for the app to start
-                    sleep 20
-                    sh scripts/health_check.sh
-                    sh scripts/api_tests.sh 127.0.0.1 ${env.SERVICE_PORT}
-                    # Kill process
-                    kill \${PID}
+                    IMAGE=${env.IMAGE_NAME}:${env.BUILD_NUMBER}
+                    docker build -f Dockerfile.multistage -t \${IMAGE} .
                 """
             }
         }
