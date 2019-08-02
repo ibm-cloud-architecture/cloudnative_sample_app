@@ -1,3 +1,5 @@
+def CONTAINER_NAME="cloudnativesampleapp"
+
 node {
 
     stage('Initialize'){
@@ -16,6 +18,17 @@ node {
 
     stage('Test'){
         sh 'mvn test'
-     }
+    }
 
+    stage("Image Prune"){
+        imagePrune(CONTAINER_NAME)
+    }
+
+}
+
+def imagePrune(containerName){
+    try {
+        sh "docker image prune -f"
+        sh "docker stop $containerName"
+    } catch(error){}
 }
