@@ -123,12 +123,14 @@ pipeline {
                     script {
                         env.encodedPass=URLEncoder.encode(PASS, "UTF-8")
                     }
-                    sh 'git clone https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git cloudnative_sample_app_deploy/chart/cloudnativesampleapp -b master'
+                    git url: "https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git",
+                        credentialsId: env.GIT_CREDENTIAL_ID,
+                        branch: master
                     sh "sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '${env.BUILD_NUMBER}'/g' values.yaml"
                     sh 'rm values.yaml.bak'
                     sh 'git add . *.yaml'
                     sh 'git commit --message "Jenkins build: ${env.BUILD_NUMBER}" '
-                    sh 'git push'
+                    sh 'git push origin master'
                 }
             }
         }
