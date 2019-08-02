@@ -119,10 +119,6 @@ pipeline {
         stage('Commit the latest image tag to deploy repo') {
             agent any
             steps{
-                withCredentials([usernamePassword(credentialsId: env.GIT_CREDENTIAL_ID, usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    script {
-                        env.encodedPass=URLEncoder.encode(PASS, "UTF-8")
-                    }
                     git url: "https://${GITHUB_CREDS_USR}:${GITHUB_CREDS_PSW}@@github.com/ibm-cloud-architecture/cloudnative_sample_app_deploy.git",
                         credentialsId: env.GIT_CREDENTIAL_ID,
                         branch: master
