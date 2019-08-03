@@ -1,4 +1,4 @@
-def cloud = env.CLOUD_NAME == "openshift" ? "openshift" : "kubernetes"
+def cloud = "openshift"
 podTemplate(
     cloud: cloud
 ) {
