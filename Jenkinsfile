@@ -35,6 +35,9 @@ pipeline {
 
         // Docker Test
         stage('Docker Test') {
+            agent {
+              label "docker"
+            }
             steps{
                 sh """
                     docker -v
