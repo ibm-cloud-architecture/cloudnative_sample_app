@@ -33,16 +33,14 @@ pipeline {
           }
         }
 
-        // Docker Test
-        stage('Docker Test') {
-            agent {
-              label "docker"
-            }
-            steps{
-                sh """
-                    docker -v
-                """
-            }
+        // Docker tests
+        stage('Docker Test'){
+          agent {
+            label "docker"
+          }
+          steps {
+            sh 'docker -v'
+          }
         }
 
     }
