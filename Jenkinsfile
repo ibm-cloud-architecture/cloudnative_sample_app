@@ -23,5 +23,24 @@ pipeline {
           }
         }
 
+        // Run Maven unit tests
+        stage('Unit Test'){
+          agent {
+            label "maven"
+          }
+          steps {
+            sh 'mvn test'
+          }
+        }
+
+        // Docker Test
+        stage('Docker Test') {
+            steps{
+                sh """
+                    docker -v
+                """
+            }
+        }
+
     }
 }
