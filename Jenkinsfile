@@ -23,16 +23,6 @@ pipeline {
           }
         }
 
-        // Run Maven unit tests
-        stage('Unit Test'){
-          agent {
-            label "maven"
-          }
-          steps {
-            sh 'mvn test'
-          }
-        }
-
         // Docker tests
         stage('Docker Test'){
           agent {
