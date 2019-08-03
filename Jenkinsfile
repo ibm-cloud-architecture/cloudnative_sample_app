@@ -1,8 +1,8 @@
-def cloud = "openshift"
+def cloud = env.CLOUD ?: "openshift"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
-    cloud: "openshift"
+    cloud: cloud
 ) {
     node(podLabel) {
         stage('Run shell') {
