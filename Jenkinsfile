@@ -15,19 +15,10 @@ podTemplate(
 
         container(name:'maven', shell:'/bin/bash') {
             stage('Local - Build') {
-                steps {
-                    sh 'mvn -B -DskipTests clean package'
-                }
+                sh 'mvn -B -DskipTests clean package'
             }
             stage('Local - Test') {
-                steps {
-                    sh 'mvn test'
-                }
-                post {
-                    always {
-                        junit 'target/surefire-reports/*.xml'
-                    }
-                }
+                sh 'mvn test'
             }
         }
     }
