@@ -18,7 +18,7 @@ podTemplate(
     ],
     containers: [
         containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash'),
-        containerTemplate(name: 'docker', image: 'ibmcase/docker:18.09-dind', privileged: true)
+        containerTemplate(name: 'docker', image: 'ibmcase/docker:18.09-dind', ttyEnabled: true, command: '/bin/bash')
     ]
 ) {
     node(podLabel) {
