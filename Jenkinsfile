@@ -14,8 +14,20 @@ podTemplate(
         checkout scm
 
         container(name:'maven', shell:'/bin/bash') {
-            stage('Local - Build and Unit Test') {
-                sh 'mvn -B -DskipTests clean package'
+            stage('Local - Build') {
+                steps {
+                    sh 'mvn -B -DskipTests clean package'
+                }
+            }
+            stage('Local - Test') {
+                steps {
+                    sh 'mvn test'
+                }
+                post {
+                    always {
+                        junit 'target/surefire-reports/*.xml'
+                    }
+                }
             }
         }
     }
