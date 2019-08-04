@@ -17,7 +17,8 @@ podTemplate(
         emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
     ],
     containers: [
-        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash')
+        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash'),
+        containerTemplate(name: 'docker', image: 'ibmcase/docker:18.09-dind', privileged: true)
     ]
 ) {
     node(podLabel) {
