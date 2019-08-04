@@ -14,8 +14,8 @@ podTemplate(
         envVar(key: 'NAMESPACE', value: namespace),
     ],
     containers: [
-        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash', workingDir: '/home/jenkins', envVars: [envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')]),
-        containerTemplate(name: 'ibmcloud', image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5', ttyEnabled: true, command: '/bin/bash')
+        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash'),
+        containerTemplate(name: 'ibmcloud', image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5', ttyEnabled: true, command: '/bin/bash', workingDir: '/home/jenkins', envVars: [envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')])
     ]
 ) {
     node(podLabel) {
