@@ -1,8 +1,12 @@
 def cloud = env.CLOUD ?: "openshift"
+def servicePort = env.SERVICE_PORT ?: "8080"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
     cloud: cloud,
+    envVars: [
+        envVar(key: 'SERVICE_PORT', value: servicePort)
+    ],
     volumes: [
         emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
     ],
@@ -19,6 +23,19 @@ podTemplate(
             }
             stage('Local - Test') {
                 sh 'mvn test'
+            }
+            stage('Local - Run') {
+                sh """
+                    #!/bin/bash
+                    java -jar ./target/cloudnativesampleapp-1.0-SNAPSHOT.jar &
+                    PID=`echo \$!`
+                    # Wait for the app to start
+                    sleep 20
+                    sh scripts/health_check.sh
+                    sh scripts/api_tests.sh 127.0.0.1 ${SERVICE_PORT}
+                    # Kill process
+                    kill \${PID}
+                """
             }
         }
     }
