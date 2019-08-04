@@ -1,17 +1,24 @@
 def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
+def registry = env.REGISTRY ?: "docker.io"
+def imageName = env.IMAGE_NAME ?: "ibmcase/greeting"
+def namespace = env.NAMESPACE ?: "default"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
     cloud: cloud,
     envVars: [
-        envVar(key: 'SERVICE_PORT', value: servicePort)
+        envVar(key: 'SERVICE_PORT', value: servicePort),
+        envVar(key: 'REGISTRY', value: registry),
+        envVar(key: 'IMAGE_NAME', value: imageName),
+        envVar(key: 'NAMESPACE', value: namespace),
     ],
     volumes: [
         emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
     ],
     containers: [
-        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash')
+        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash'),
+        containerTemplate(name: 'docker', image: 'docker', privileged: true),
     ]
 ) {
     node(podLabel) {
@@ -38,5 +45,21 @@ podTemplate(
                 """
             }
         }
+
+        container(name:'docker', shell:'/bin/bash') {
+            stage('Docker - Build Image') {
+                sh """
+                #!/bin/bash
+                # Get image
+                if [ "${REGISTRY}" == "docker.io" ]; then
+                    IMAGE=${IMAGE_NAME}:${env.BUILD_NUMBER}
+                else
+                    IMAGE=${REGISTRY}/${NAMESPACE}/${IMAGE_NAME}:${env.BUILD_NUMBER}
+                fi
+                docker build -f Dockerfile.multistage -t \${IMAGE} .
+                """
+            }
+       }
+
     }
 }
