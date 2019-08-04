@@ -81,6 +81,19 @@ podTemplate(
                     fi
                 '''
             }
+            stage('Build image') {
+                sh '''#!/bin/bash
+                    set -x
+
+                    IMAGE=${IMAGE_NAME}:${env.BUILD_NUMBER}
+
+                    echo -e "=========================================================================================="
+                    echo -e "BUILDING CONTAINER IMAGE: ${IMAGE}"
+                    set -x
+                    ibmcloud cr build -f Dockerfile.multistage -t \${IMAGE} .
+
+                '''
+            }
         }
 
     }
