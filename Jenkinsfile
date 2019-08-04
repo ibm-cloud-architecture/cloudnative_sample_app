@@ -2,11 +2,21 @@ def cloud = env.CLOUD ?: "openshift"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
-    cloud: cloud
+    cloud: cloud,
+    volumes: [
+        emptyDirVolume(mountPath: '/var/lib/docker', memory: false)
+    ],
+    containers: [
+        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash')
+    ]
 ) {
     node(podLabel) {
-        stage('Run shell') {
-            sh 'echo hello world'
+        checkout scm
+
+        container(name:'maven', shell:'/bin/bash') {
+            stage('Local - Build and Unit Test') {
+                sh 'mvn -B -DskipTests clean package'
+            }
         }
     }
 }
