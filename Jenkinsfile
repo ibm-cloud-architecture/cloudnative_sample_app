@@ -14,8 +14,28 @@ podTemplate(
         envVar(key: 'NAMESPACE', value: namespace),
     ],
     containers: [
-        containerTemplate(name: 'maven', image: 'maven:3-alpine', ttyEnabled: true, command: '/bin/bash', workingDir: '/home/jenkins'),
-        containerTemplate(name: 'ibmcloud', image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5', ttyEnabled: true, command: '/bin/bash', workingDir: '/home/jenkins', envVars: [envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/')])
+        containerTemplate(
+            name: 'maven',
+            image: 'maven:3-alpine',
+            ttyEnabled: true,
+            command: '/bin/bash',
+            workingDir: '/home/jenkins'
+        ),
+        containerTemplate(
+            name: 'ibmcloud',
+            image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5',
+            ttyEnabled: true,
+            command: '/bin/bash',
+            workingDir: '/home/jenkins',
+            envVars: [
+                envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
+                envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
+                envVar(key: 'REGISTRY_URL', value: 'docker.io'),
+                secretEnvVar(key: 'APIKEY', secretName: 'ibmcloud-apikey', secretKey: 'password'),
+                secretEnvVar(key: 'RESOURCE_GROUP', secretName: 'ibmcloud-apikey', secretKey: 'resource_group'),
+                envVar(key: 'HOME', value: '/home/devops')
+            ]
+        )
     ]
 ) {
     node(podLabel) {
@@ -42,6 +62,25 @@ podTemplate(
                 """
             }
         }
+
+        container(name: 'ibmcloud', shell: '/bin/bash') {
+            stage('Verify environment') {
+                sh '''#!/bin/bash
+                    set -x
+
+                    whoami
+
+                    if [[ -z "${APIKEY}" ]]; then
+                      echo "APIKEY is required"
+                      exit 1
+                    fi
+
+                    if [[ -z "${RESOURCE_GROUP}" ]]; then
+                      echo "RESOURCE_GROUP is required"
+                      exit 1
+                    fi
+                '''
+            }
 
     }
 }

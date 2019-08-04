@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ibmcloud-apikey
+type: Opaque
+data:
+  password: eUR5UUczSF9VWHBnalZyczc0TEEwWU5jcjVvMEY1V0tYSjIxbVJpb3RUYVY=
+  resource_group: Y2F0YWx5c3QtdGVhbQ==
