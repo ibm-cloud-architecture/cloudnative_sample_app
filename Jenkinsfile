@@ -46,20 +46,5 @@ podTemplate(
             }
         }
 
-        container(name:'docker', shell:'/bin/bash') {
-            stage('Docker - Build Image') {
-                sh """
-                #!/bin/bash
-                # Get image
-                if [ "${REGISTRY}" == "docker.io" ]; then
-                    IMAGE=${IMAGE_NAME}:${env.BUILD_NUMBER}
-                else
-                    IMAGE=${REGISTRY}/${NAMESPACE}/${IMAGE_NAME}:${env.BUILD_NUMBER}
-                fi
-                docker build -f Dockerfile.multistage -t \${IMAGE} .
-                """
-            }
-       }
-
     }
 }
