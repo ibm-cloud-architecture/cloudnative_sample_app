@@ -86,6 +86,7 @@ podTemplate(
                 sh '''#!/bin/bash
                     set -x
 
+                    ibmcloud login --apikey ${APIKEY}
                     echo -e "=========================================================================================="
                     echo -e "BUILDING CONTAINER IMAGE: ${IMAGE}"
                     set -x
