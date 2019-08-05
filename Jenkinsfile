@@ -12,6 +12,7 @@ podTemplate(
         envVar(key: 'REGISTRY', value: registry),
         envVar(key: 'IMAGE_NAME', value: imageName),
         envVar(key: 'NAMESPACE', value: namespace),
+        envVar(key: 'BUILD_NUMBER', value: "${env.BUILD_NUMBER}")
     ],
     containers: [
         containerTemplate(
@@ -88,7 +89,7 @@ podTemplate(
                     echo -e "=========================================================================================="
                     echo -e "BUILDING CONTAINER IMAGE: ${IMAGE}"
                     set -x
-                    ibmcloud cr build -f Dockerfile.multistage -t ${IMAGE_NAME}:${env.BUILD_NUMBER} .
+                    ibmcloud cr build -f Dockerfile.multistage -t ${IMAGE_NAME}:${BUILD_NUMBER} .
 
                 '''
             }
