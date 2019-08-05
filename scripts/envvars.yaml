@@ -6,3 +6,6 @@ type: Opaque
 data:
   password: eUR5UUczSF9VWHBnalZyczc0TEEwWU5jcjVvMEY1V0tYSjIxbVJpb3RUYVY=
   resource_group: Y2F0YWx5c3QtdGVhbQ==
+  registry_url: dXMuaWNyLmlv
+  registry_namespace: Y2xvdWRuYXRpdmU=
+  region: dXMtZWFzdA==

@@ -9,7 +9,6 @@ podTemplate(
     cloud: cloud,
     envVars: [
         envVar(key: 'SERVICE_PORT', value: servicePort),
-        envVar(key: 'REGISTRY', value: registry),
         envVar(key: 'IMAGE_NAME', value: imageName),
         envVar(key: 'NAMESPACE', value: namespace),
         envVar(key: 'BUILD_NUMBER', value: "${env.BUILD_NUMBER}")
@@ -31,7 +30,9 @@ podTemplate(
             envVars: [
                 envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
                 envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
-                envVar(key: 'REGISTRY_URL', value: 'docker.io'),
+                secretEnvVar(key: 'REGISTRY_URL', secretName: 'ibmcloud-apikey', secretKey: 'registry_url'),
+                secretEnvVar(key: 'REGISTRY_NAMESPACE', secretName: 'ibmcloud-apikey', secretKey: 'registry_namespace'),
+                secretEnvVar(key: 'REGION', secretName: 'ibmcloud-apikey', secretKey: 'region'),
                 secretEnvVar(key: 'APIKEY', secretName: 'ibmcloud-apikey', secretKey: 'password'),
                 secretEnvVar(key: 'RESOURCE_GROUP', secretName: 'ibmcloud-apikey', secretKey: 'resource_group'),
                 envVar(key: 'HOME', value: '/home/devops')
@@ -86,11 +87,30 @@ podTemplate(
                 sh '''#!/bin/bash
                     set -x
 
-                    ibmcloud login -r us-east --apikey ${APIKEY}
+                    ibmcloud login -r ${REGION} --apikey ${APIKEY}
+
+                    ibmcloud cr login
+
+                    echo "Checking registry namespace: ${REGISTRY_NAMESPACE}"
+                    NS=$( ibmcloud cr namespaces | grep ${REGISTRY_NAMESPACE} ||: )
+                    if [[ -z "${NS}" ]]; then
+                        echo -e "Registry namespace ${REGISTRY_NAMESPACE} not found, creating it."
+                        ibmcloud cr namespace-add ${REGISTRY_NAMESPACE}
+                    else
+                        echo -e "Registry namespace ${REGISTRY_NAMESPACE} found."
+                    fi
+
+                    echo -e "Existing images in registry"
+                    ibmcloud cr images --restrict "${REGISTRY_NAMESPACE}/${IMAGE_NAME}"
+
+
                     echo -e "=========================================================================================="
-                    echo -e "BUILDING CONTAINER IMAGE: ${IMAGE}"
+                    echo -e "BUILDING CONTAINER IMAGE: ${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${BUILD_NUMBER}"
                     set -x
-                    ibmcloud cr build -f Dockerfile.multistage -t ${IMAGE_NAME}:${BUILD_NUMBER} .
+                    ibmcloud cr build -f Dockerfile.multistage -t ${REGISTRY_URL}/${REGISTRY_NAMESPACE}/${IMAGE_NAME}:${BUILD_NUMBER} .
+
+                    echo -e "Available images in registry"
+                    ibmcloud cr images --restrict ${REGISTRY_NAMESPACE}/${IMAGE_NAME}
 
                 '''
             }
