@@ -135,11 +135,11 @@ podTemplate(
                 dir ('deploy') {
                   git url: "https://github.com/Hemankita/cloudnative_sample_app_deploy.git",
                       branch: "master",
-                      credentialsId: githubCredsID
+                      credentialsId: "githubCredsID"
 
                   sh "find ."
 
-                  withCredentials([usernamePassword(credentialsId: githubCredsID,
+                  withCredentials([usernamePassword(credentialsId: 'githubCredsID',
                                                     usernameVariable: 'USERNAME',
                                                     passwordVariable: 'PASSWORD')]) {
 
