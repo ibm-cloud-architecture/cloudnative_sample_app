@@ -146,7 +146,6 @@ podTemplate(
                   sh """
                      git config user.email "jenkins@jenkins.com"
                      git config user.name "jenkins"
-                     cd cloudnative_sample_app_deploy
                      cd chart/cloudnativesampleapp
                      sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '${BUILD_NUMBER}'/g' values.yaml
                      rm values.yaml.bak
