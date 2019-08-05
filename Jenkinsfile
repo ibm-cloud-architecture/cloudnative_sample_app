@@ -2,6 +2,7 @@ def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
 def imageName = env.IMAGE_NAME ?: "greeting"
 def namespace = env.NAMESPACE ?: "default"
+def githubCredsID = env.GITHUB_CREDENTIALS ?: "github-credentials-id"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
@@ -80,9 +81,24 @@ podTemplate(
                       echo "RESOURCE_GROUP is required"
                       exit 1
                     fi
+
+                    if [[ -z "${REGION}" ]]; then
+                      echo "REGION is required"
+                      exit 1
+                    fi
+
+                    if [[ -z "${REGISTRY_NAMESPACE}" ]]; then
+                      echo "REGISTRY_NAMESPACE is required"
+                      exit 1
+                    fi
+
+                    if [[ -z "${REGISTRY_URL}" ]]; then
+                      echo "REGISTRY_URL is required"
+                      exit 1
+                    fi
                 '''
             }
-            stage('Build image') {
+            stage('Build and Push Image') {
                 sh '''#!/bin/bash
                     set -x
 
@@ -112,6 +128,34 @@ podTemplate(
                     ibmcloud cr images --restrict ${REGISTRY_NAMESPACE}/${IMAGE_NAME}
 
                 '''
+            }
+            stage('Push to Deploy repo') {
+                sh "mkdir -p deploy"
+
+                dir ('deploy') {
+                  git url: "https://github.com/Hemankita/cloudnative_sample_app_deploy.git",
+                      branch: "master",
+                      credentialsId: githubCredsID
+
+              sh "find ."
+
+              withCredentials([usernamePassword(credentialsId: githubCredsID,
+                                               usernameVariable: 'USERNAME',
+                                               passwordVariable: 'PASSWORD')]) {
+
+                sh """
+                git config user.email "jenkins@jenkins.com"
+                git config user.name "jenkins"
+                cd cloudnative_sample_app_deploy
+                cd chart/cloudnativesampleapp
+                sed -i.bak '/^image/,/^service/ s/\(\s*tag\s*:\s*\).*/\ \ tag: '$COMMIT'/g' values.yaml
+                rm values.yaml.bak
+                git add . *.yaml
+                git commit -m "Jenkins commit: ${BUILD_NUMBER}"
+                git push origin master
+                """
+
+              }
             }
         }
 
