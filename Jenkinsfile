@@ -1,7 +1,6 @@
 def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
-def registry = env.REGISTRY ?: "docker.io"
-def imageName = env.IMAGE_NAME ?: "ibmcase/greeting"
+def imageName = env.IMAGE_NAME ?: "greeting"
 def namespace = env.NAMESPACE ?: "default"
 def podLabel = "sample"
 podTemplate(
