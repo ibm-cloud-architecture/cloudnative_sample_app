@@ -2,7 +2,6 @@ def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
 def imageName = env.IMAGE_NAME ?: "greeting"
 def namespace = env.NAMESPACE ?: "default"
-def githubCredsID = env.GITHUB_CREDENTIALS ?: "github-credentials-id"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
@@ -144,7 +143,7 @@ podTemplate(
                                                     passwordVariable: 'PASSWORD')]) {
 
                   println(env.USERNAME)
-                  println(env.PASSWORD)
+                  println(env.PASSWORDcd)
                   sh """
                      git config user.email "jenkins@jenkins.com"
                      git config user.name "jenkins"
