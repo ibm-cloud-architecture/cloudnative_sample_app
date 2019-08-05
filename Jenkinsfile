@@ -151,7 +151,9 @@ podTemplate(
                      rm values.yaml.bak
                      git add . *.yaml
                      git commit -m "Jenkins commit: ${BUILD_NUMBER}"
-                     git push origin master
+                     git remote rm origin
+                     git remote add origin https://${env.USERNAME}:${env.PASSWORD}@github.com/Hemankita/cloudnative_sample_app_deploy.git > /dev/null 2>&1
+                     git push origin master --quiet
                 """
                 }
               }
