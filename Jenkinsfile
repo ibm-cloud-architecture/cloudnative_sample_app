@@ -148,7 +148,7 @@ podTemplate(
                 git config user.name "jenkins"
                 cd cloudnative_sample_app_deploy
                 cd chart/cloudnativesampleapp
-                sed -i.bak '/^image/,/^service/ s/\(\s*tag\s*:\s*\).*/\ \ tag: '$COMMIT'/g' values.yaml
+                sed -i.bak '/^image/,/^service/ s/\\(\\s*tag\\s*:\\s*\\).*/\\ \\ tag: '${BUILD_NUMBER}'/g' values.yaml
                 rm values.yaml.bak
                 git add . *.yaml
                 git commit -m "Jenkins commit: ${BUILD_NUMBER}"
