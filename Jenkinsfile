@@ -1,7 +1,6 @@
 def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
 def imageName = env.IMAGE_NAME ?: "greeting"
-def namespace = env.NAMESPACE ?: "default"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
@@ -9,7 +8,6 @@ podTemplate(
     envVars: [
         envVar(key: 'SERVICE_PORT', value: servicePort),
         envVar(key: 'IMAGE_NAME', value: imageName),
-        envVar(key: 'NAMESPACE', value: namespace),
         envVar(key: 'BUILD_NUMBER', value: "${env.BUILD_NUMBER}")
     ],
     containers: [
@@ -29,11 +27,6 @@ podTemplate(
             envVars: [
                 envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
                 envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
-                secretEnvVar(key: 'REGISTRY_URL', secretName: 'ibmcloud-apikey', secretKey: 'registry_url'),
-                secretEnvVar(key: 'REGISTRY_NAMESPACE', secretName: 'ibmcloud-apikey', secretKey: 'registry_namespace'),
-                secretEnvVar(key: 'REGION', secretName: 'ibmcloud-apikey', secretKey: 'region'),
-                secretEnvVar(key: 'APIKEY', secretName: 'ibmcloud-apikey', secretKey: 'password'),
-                secretEnvVar(key: 'RESOURCE_GROUP', secretName: 'ibmcloud-apikey', secretKey: 'resource_group'),
                 envVar(key: 'HOME', value: '/home/devops')
             ]
         )
@@ -65,39 +58,12 @@ podTemplate(
         }
 
         container(name: 'ibmcloud', shell: '/bin/bash') {
-            stage('Verify environment') {
-                sh '''#!/bin/bash
-                    set -x
-
-                    whoami
-
-                    if [[ -z "${APIKEY}" ]]; then
-                      echo "APIKEY is required"
-                      exit 1
-                    fi
-
-                    if [[ -z "${RESOURCE_GROUP}" ]]; then
-                      echo "RESOURCE_GROUP is required"
-                      exit 1
-                    fi
-
-                    if [[ -z "${REGION}" ]]; then
-                      echo "REGION is required"
-                      exit 1
-                    fi
-
-                    if [[ -z "${REGISTRY_NAMESPACE}" ]]; then
-                      echo "REGISTRY_NAMESPACE is required"
-                      exit 1
-                    fi
-
-                    if [[ -z "${REGISTRY_URL}" ]]; then
-                      echo "REGISTRY_URL is required"
-                      exit 1
-                    fi
-                '''
-            }
             stage('Build and Push Image') {
+                withCredentials(
+                 [string(credentialsId: 'registry_url', variable: 'REGISTRY_URL'),
+                  string(credentialsId: 'registry_namespace', variable: 'REGISTRY_NAMESPACE'),
+                  string(credentialsId: 'ibm_cloud_region', variable: 'REGION'),
+                  string(credentialsId: 'ibm_cloud_api_key', variable: 'APIKEY')]) {
                 sh '''#!/bin/bash
                     set -x
 
@@ -127,6 +93,7 @@ podTemplate(
                     ibmcloud cr images --restrict ${REGISTRY_NAMESPACE}/${IMAGE_NAME}
 
                 '''
+                }
             }
             stage('Push to Deploy repo') {
                 sh "mkdir -p deploy"
@@ -139,11 +106,9 @@ podTemplate(
                   sh "find ."
 
                   withCredentials(
-                   [string(credentialsId: 'git-account', variable: 'GIT_COMMITTER_ACCOUNT'),
+                   [string(credentialsId: 'git-account', variable: 'GIT_USER_ACCOUNT'),
                     string(credentialsId: 'github-token', variable: 'GITHUB_API_TOKEN')]) {
 
-                  println(env.USERNAME)
-                  println(env.PASSWORDcd)
                   sh """
                      git config user.email "jenkins@jenkins.com"
                      git config user.name "jenkins"
@@ -153,7 +118,7 @@ podTemplate(
                      git add . *.yaml
                      git commit -m "Jenkins commit: ${BUILD_NUMBER}"
                      git remote rm origin
-                     git remote add origin https://${GIT_COMMITTER_ACCOUNT}:${GITHUB_API_TOKEN}@github.com/Hemankita/cloudnative_sample_app_deploy.git > /dev/null 2>&1
+                     git remote add origin https://${GIT_USER_ACCOUNT}:${GITHUB_API_TOKEN}@github.com/Hemankita/cloudnative_sample_app_deploy.git > /dev/null 2>&1
                      git push origin master
                 """
                 }
