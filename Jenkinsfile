@@ -138,9 +138,9 @@ podTemplate(
 
                   sh "find ."
 
-                  withCredentials([usernamePassword(credentialsId: 'github-credentials-id',
-                                                    usernameVariable: 'USERNAME',
-                                                    passwordVariable: 'PASSWORD')]) {
+                  withCredentials(
+                   [string(credentialsId: 'git-account', variable: 'GIT_COMMITTER_ACCOUNT'),
+                    string(credentialsId: 'github-token', variable: 'GITHUB_API_TOKEN')]) {
 
                   println(env.USERNAME)
                   println(env.PASSWORDcd)
@@ -152,7 +152,9 @@ podTemplate(
                      rm values.yaml.bak
                      git add . *.yaml
                      git commit -m "Jenkins commit: ${BUILD_NUMBER}"
-                     git push https://env.USERNAME:env.PASSWORD@github.com/Hemankita/cloudnative_sample_app_deploy.git master
+                     git remote rm origin
+                     git remote add origin https://${GIT_COMMITTER_ACCOUNT}:${GITHUB_API_TOKEN}@github.com/Hemankita/cloudnative_sample_app_deploy.git > /dev/null 2>&1
+                     git push origin master
                 """
                 }
               }
