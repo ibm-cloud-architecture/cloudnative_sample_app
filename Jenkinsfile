@@ -152,9 +152,7 @@ podTemplate(
                      rm values.yaml.bak
                      git add . *.yaml
                      git commit -m "Jenkins commit: ${BUILD_NUMBER}"
-                     git config --global credential.username {USERNAME}
-                     git config --global credential.helper "!echo password={PASSWORD}; echo"
-                     git push origin master
+                     git push https://env.USERNAME:env.PASSWORD@github.com/Hemankita/cloudnative_sample_app_deploy.git master
                 """
                 }
               }
