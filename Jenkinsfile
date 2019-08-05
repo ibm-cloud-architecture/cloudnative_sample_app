@@ -143,6 +143,8 @@ podTemplate(
                                                     usernameVariable: 'USERNAME',
                                                     passwordVariable: 'PASSWORD')]) {
 
+                  println(env.USERNAME)
+                  println(env.PASSWORD)
                   sh """
                      git config user.email "jenkins@jenkins.com"
                      git config user.name "jenkins"
