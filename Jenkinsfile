@@ -152,7 +152,7 @@ podTemplate(
                      rm values.yaml.bak
                      git add . *.yaml
                      git commit -m "Jenkins commit: ${BUILD_NUMBER}"
-                     git push https://Hemankita:55d70352dbf0ee60612740159eb624b0f69218db@github.com/Hemankita/cloudnative_sample_app_deploy.git master
+                     git push https://env.USERNAME:env.PASSWORD@github.com/Hemankita/cloudnative_sample_app_deploy.git master
                 """
                 }
               }
