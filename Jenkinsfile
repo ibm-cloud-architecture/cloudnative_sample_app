@@ -16,7 +16,7 @@ podTemplate(
             image: 'maven:3-alpine',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: '/home/jenkins/agent'
+            workingDir: '/home/jenkins'
         ),
         containerTemplate(
             name: 'ibmcloud',
