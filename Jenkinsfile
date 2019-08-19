@@ -1,12 +1,10 @@
-def cloud = env.CLOUD ?: "openshift" ? "openshift" : "kubernetes"
-def workingDir = env.CLOUD == "openshift" ? "/home/jenkins" : "/home/jenkins/agent"
+def cloud = env.CLOUD ?: "openshift"
 def servicePort = env.SERVICE_PORT ?: "8080"
 def imageName = env.IMAGE_NAME ?: "greeting"
 def podLabel = "sample"
 podTemplate(
     label: podLabel,
     cloud: cloud,
-    workingDir: workingDir,
     envVars: [
         envVar(key: 'SERVICE_PORT', value: servicePort),
         envVar(key: 'IMAGE_NAME', value: imageName),
@@ -18,14 +16,14 @@ podTemplate(
             image: 'maven:3-alpine',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: workingDir
+            workingDir: '/home/jenkins/agent'
         ),
         containerTemplate(
             name: 'ibmcloud',
             image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: workingDir,
+            workingDir: '/home/jenkins/agent',
             envVars: [
                 envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
                 envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
