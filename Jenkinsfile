@@ -16,17 +16,18 @@ podTemplate(
             image: 'maven:3-alpine',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: '/home/jenkins'
+            workingDir: '/home/jenkins',
+            envVars: [
+                envVar(key: 'HOME', value: '/home/jenkins')
+            ]
         ),
         containerTemplate(
             name: 'ibmcloud',
-            image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5',
+            image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.7',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: '/home/jenkins/agent',
+            workingDir: '/home/jenkins',
             envVars: [
-                envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
-                envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
                 envVar(key: 'HOME', value: '/home/devops')
             ]
         )
