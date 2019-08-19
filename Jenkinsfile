@@ -6,6 +6,7 @@ def podLabel = "sample"
 podTemplate(
     label: podLabel,
     cloud: cloud,
+    workingDir: workingDir,
     envVars: [
         envVar(key: 'SERVICE_PORT', value: servicePort),
         envVar(key: 'IMAGE_NAME', value: imageName),
@@ -17,14 +18,14 @@ podTemplate(
             image: 'maven:3-alpine',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: ${workingDir}
+            workingDir: workingDir
         ),
         containerTemplate(
             name: 'ibmcloud',
             image: 'docker.io/garagecatalyst/ibmcloud-dev:1.0.5',
             ttyEnabled: true,
             command: '/bin/bash',
-            workingDir: ${workingDir},
+            workingDir: workingDir,
             envVars: [
                 envVar(key: 'DOCKER_CONFIG', value: '/home/jenkins/.docker/'),
                 envVar(key: 'APIURL', value: 'https://cloud.ibm.com'),
