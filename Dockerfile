@@ -1,9 +1,31 @@
+# Build stage - could use maven or our image
+FROM maven:3.3-jdk-8 as builder
+
+# Creating Work directory
+ENV BUILD_DIR=/usr/src/app/
+RUN mkdir $BUILD_DIR
+WORKDIR $BUILD_DIR
+
+# Reuse local .m2. if not all the dependencies will be always downloaded
+# This can be removed if you want to
+VOLUME ${HOME}/.m2:/root/.m2
+ADD . /usr/src/app
+
+RUN bash -c " mvn clean install"
+
 FROM openliberty/open-liberty:springBoot2-ubi-min as staging
 USER root
-COPY target/cloudnativesampleapp-1.0-SNAPSHOT.jar /staging/fatClinic.jar
+
+# Create app directory
+ENV APP_HOME=/app
+WORKDIR $APP_HOME
+
+# Copy jar file over from builder stage
+COPY --from=builder /usr/src/app/target/cloudnativesampleapp-1.0-SNAPSHOT.jar $APP_HOME
+RUN mv ./cloudnativesampleapp-1.0-SNAPSHOT.jar app.jar
 
 RUN springBootUtility thin \
- --sourceAppPath=/staging/fatClinic.jar \
+ --sourceAppPath=app.jar \
  --targetThinAppPath=/staging/thinClinic.jar \
  --targetLibCachePath=/staging/lib.index.cache
 
