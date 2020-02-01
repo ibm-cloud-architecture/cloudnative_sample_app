@@ -9,3 +9,4 @@
 To build and run the application:
 1. `mvn install`
 2. `java -jar ./target/cloudnativesampleapp-1.0-SNAPSHOT.jar`
+3. Try the App endpoint http://localhost:9080/greeting?name=Carlos

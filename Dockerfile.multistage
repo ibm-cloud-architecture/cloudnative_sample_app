@@ -18,6 +18,7 @@ USER root
 
 # Create app directory
 ENV APP_HOME=/app
+RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
 # Copy jar file over from builder stage
@@ -25,9 +26,9 @@ COPY --from=builder /usr/src/app/target/cloudnativesampleapp-1.0-SNAPSHOT.jar $A
 RUN mv ./cloudnativesampleapp-1.0-SNAPSHOT.jar app.jar
 
 RUN springBootUtility thin \
- --sourceAppPath=app.jar \
- --targetThinAppPath=/staging/thinClinic.jar \
- --targetLibCachePath=/staging/lib.index.cache
+    --sourceAppPath=app.jar \
+    --targetThinAppPath=/staging/thinClinic.jar \
+    --targetLibCachePath=/staging/lib.index.cache
 
 FROM openliberty/open-liberty:springBoot2-ubi-min
 USER root
